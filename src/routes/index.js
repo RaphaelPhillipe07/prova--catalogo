@@ -1,23 +1,29 @@
 import { Router } from 'express';
+import { CategoriasRepository } from '../repositories/categorias.repository.prisma';
+import { ProdutosRepository } from '../repositories/produtos.repository.prisma';
+import { ProdutosService } from '../services/produtos.service';
+import { CategoriasService } from '../services/categorias.service';
+import { ProdutosController } from '../controllers/produtos.controller';
+import { CategoriasController } from '../controllers/categorias.controller';
 
-// COMPOSITION ROOT + ROTAS SSR.
-// Monte a cadeia de dependências (repositório -> service -> controller) das duas
-// entidades e declare as rotas.
-//
-// Rotas que a aplicação precisa ter:
-//   GET  /                   -> redireciona para /produtos
-//   -- Categorias --
-//   GET  /categorias         -> listagem
-//   GET  /categorias/nova    -> formulário de nova categoria (declare ANTES de rotas com :id, se houver)
-//   POST /categorias         -> validar entrada e criar
-//   -- Produtos --
-//   GET  /produtos           -> listagem
-//   GET  /produtos/novo      -> formulário de novo produto
-//   POST /produtos           -> validar entrada e criar
 export function criarRotas() {
   const router = Router();
+  
+  const categoriasRepository = new CategoriasRepository();
+  const produtosRepository = new ProdutosRepository();
+  const categoriasService = new CategoriasService();
+  const produtosService = new ProdutosService();
+  const categoriasController = new CategoriasController();
+  const produtosController = new ProdutosController();
 
-  // TODO: instanciar repositórios, services e controllers; declarar as rotas acima.
+  router.get('/', categoriasController.index);
+  router.get('/categorias', categoriasController.index);
+  router.get('/categorias/nova', categoriasController.nova);
+  router.post('/categorias', categoriasController.criar);
+
+  router.get('/produtos', produtosController.index);
+  router.get('/produtos/novo', produtosController.novo);
+  router.post('/produtos', produtosController.criar);
 
   return router;
 }
