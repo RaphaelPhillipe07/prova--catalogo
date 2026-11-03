@@ -1,15 +1,37 @@
-// CONTROLLER (SSR) de Categoria — traduz HTTP <-> views (res.render + PRG).
-// NÃO coloque regra de negócio aqui (isso é do service).
-//
-// Ações:
-//   - index (GET /categorias)      -> renderiza a listagem;
-//   - nova  (GET /categorias/nova) -> renderiza o formulário vazio;
-//   - criar (POST /categorias)     -> cria e redireciona; se der erro de negócio
-//                                     (4xx), reexiba o formulário com a mensagem.
 export class CategoriasController {
   constructor(categoriasService) {
     this.service = categoriasService;
-    // Dica: "amarre" o this dos métodos usados como callback nas rotas.
+    this.index = this.index.bind(this);
+    this.nova = this.nova.bind(this);
+    this.criar = this.criar.bind(this);
   }
-  // TODO: implemente index, nova, criar.
+
+  async index(req, res, next) {
+    try {
+      const categorias = await this.service.listar();
+      return res.render('/categorias', { categorias });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  nova(req, res) {
+    return res.render('categorias/nova', { erro: null, dados: {} });
+  }
+
+  async criar(req, res, next) {
+    try {
+      await this.service.criar(req.body);
+      
+      return res.redirect('/categorias');
+    } catch (error) {
+      if (error.statusCode && error.statusCode >= 400 && error.statusCode < 500) {
+        return res.status(error.statusCode).render('categorias/nova', {
+          erro: error.message,
+          dados: req.body 
+        });
+      }     
+      next(error);
+    }
+  }
 }
